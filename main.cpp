@@ -1,6 +1,6 @@
-// Standard headers only for portability
-#include <iostream>
 #include <algorithm>
+#include <iostream>
+
 using namespace std;
 
 namespace LIST {
@@ -18,11 +18,26 @@ namespace LIST {
         len = 0;
     }
 
-    NODE* move(int i) {
-        if (len == 0 || i < 0 || i >= len) return nullptr;
-        NODE* p = head;
-        for (int k = 0; k < i; ++k) p = p->next;
-        return p;
+    NODE* at(int i) {
+        if (i < 0 || i >= len || head == nullptr) {
+            return nullptr;
+        }
+        NODE* cur = head;
+        for (int step = 0; step < i; ++step) {
+            cur = cur->next;
+        }
+        return cur;
+    }
+
+    NODE* tail() {
+        if (len == 0 || head == nullptr) {
+            return nullptr;
+        }
+        NODE* cur = head;
+        for (int step = 1; step < len; ++step) {
+            cur = cur->next;
+        }
+        return cur;
     }
 
     void insert(int i, int x) {
@@ -33,63 +48,70 @@ namespace LIST {
             ++len;
             return;
         }
+
         if (i <= 0) {
-            // insert before head
-            NODE* tail = move(len - 1);
+            NODE* last = tail();
             node->next = head;
-            tail->next = node;
+            last->next = node;
             head = node;
             ++len;
             return;
         }
-        // insert before index i, i in [1, len]
-        NODE* prev = move(i - 1);
+
+        NODE* prev = at(i - 1);
         node->next = prev->next;
         prev->next = node;
         ++len;
     }
 
     void remove(int i) {
-        if (len == 0) return;
+        if (len == 0) {
+            return;
+        }
+
         if (len == 1) {
             delete head;
             head = nullptr;
             len = 0;
             return;
         }
+
         if (i <= 0) {
-            NODE* tail = move(len - 1);
-            NODE* del = head;
+            NODE* last = tail();
+            NODE* doomed = head;
             head = head->next;
-            tail->next = head;
-            delete del;
+            last->next = head;
+            delete doomed;
             --len;
             return;
         }
-        NODE* prev = move(i - 1);
-        NODE* del = prev->next;
-        prev->next = del->next;
-        delete del;
+
+        NODE* prev = at(i - 1);
+        NODE* doomed = prev->next;
+        prev->next = doomed->next;
+        delete doomed;
         --len;
     }
 
     void remove_insert(int i) {
-        if (len <= 1 || i >= len || i < 0) return; // nothing to do or invalid
-        if (i == len - 1) return; // already at tail
-        // Capture the original tail before splicing the node out.
-        NODE* tail = move(len - 1);
-        if (i == 0) {
-            NODE* x = head;
-            head = head->next;
-            tail->next = x;
-            x->next = head;
+        if (len <= 1 || i < 0 || i >= len - 1) {
             return;
         }
-        NODE* prev = move(i - 1);
-        NODE* x = prev->next;
-        prev->next = x->next;
-        tail->next = x;
-        x->next = head;
+
+        NODE* last = tail();
+        if (i == 0) {
+            NODE* moved = head;
+            head = head->next;
+            last->next = moved;
+            moved->next = head;
+            return;
+        }
+
+        NODE* prev = at(i - 1);
+        NODE* moved = prev->next;
+        prev->next = moved->next;
+        last->next = moved;
+        moved->next = head;
     }
 
     void get_length() {
@@ -97,31 +119,40 @@ namespace LIST {
     }
 
     void query(int i) {
-        if (i < 0 || i >= len || len == 0) {
+        NODE* cur = at(i);
+        if (cur == nullptr) {
             cout << -1 << '\n';
             return;
         }
-        NODE* p = move(i);
-        cout << p->val << '\n';
+        cout << cur->val << '\n';
     }
 
     void get_max() {
-        if (len == 0) {
+        if (len == 0 || head == nullptr) {
             cout << -1 << '\n';
             return;
         }
+
         int mx = head->val;
-        for (NODE* p = head->next; p != head; p = p->next) mx = max(mx, p->val);
+        NODE* cur = head->next;
+        while (cur != head) {
+            mx = max(mx, cur->val);
+            cur = cur->next;
+        }
         cout << mx << '\n';
     }
 
     void clear() {
-        if (len == 0 || head == nullptr) return;
-        NODE* p = head->next;
-        while (p != head) {
-            NODE* tmp = p;
-            p = p->next;
-            delete tmp;
+        if (head == nullptr) {
+            len = 0;
+            return;
+        }
+
+        NODE* cur = head->next;
+        while (cur != head) {
+            NODE* next = cur->next;
+            delete cur;
+            cur = next;
         }
         delete head;
         head = nullptr;
@@ -134,36 +165,37 @@ int main() {
     cin.tie(nullptr);
 
     int n;
-    if (!(cin >> n)) return 0;
-    int op, x, p;
+    if (!(cin >> n)) {
+        return 0;
+    }
+
     LIST::init();
-    for (int _ = 0; _ < n; ++_) {
+    for (int idx = 0; idx < n; ++idx) {
+        int op;
         cin >> op;
-        switch (op) {
-            case 0:
-                LIST::get_length();
-                break;
-            case 1:
-                cin >> p >> x;
-                LIST::insert(p, x);
-                break;
-            case 2:
-                cin >> p;
-                LIST::query(p);
-                break;
-            case 3:
-                cin >> p;
-                LIST::remove(p);
-                break;
-            case 4:
-                cin >> p;
-                LIST::remove_insert(p);
-                break;
-            case 5:
-                LIST::get_max();
-                break;
+        if (op == 0) {
+            LIST::get_length();
+        } else if (op == 1) {
+            int p, x;
+            cin >> p >> x;
+            LIST::insert(p, x);
+        } else if (op == 2) {
+            int p;
+            cin >> p;
+            LIST::query(p);
+        } else if (op == 3) {
+            int p;
+            cin >> p;
+            LIST::remove(p);
+        } else if (op == 4) {
+            int p;
+            cin >> p;
+            LIST::remove_insert(p);
+        } else if (op == 5) {
+            LIST::get_max();
         }
     }
+
     LIST::clear();
     return 0;
 }
