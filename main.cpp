@@ -74,8 +74,9 @@ namespace LIST {
     void remove_insert(int i) {
         if (len <= 1 || i >= len || i < 0) return; // nothing to do or invalid
         if (i == len - 1) return; // already at tail
+        // Capture the original tail before splicing the node out.
+        NODE* tail = move(len - 1);
         if (i == 0) {
-            NODE* tail = move(len - 1);
             NODE* x = head;
             head = head->next;
             tail->next = x;
@@ -85,7 +86,6 @@ namespace LIST {
         NODE* prev = move(i - 1);
         NODE* x = prev->next;
         prev->next = x->next;
-        NODE* tail = move(len - 1);
         tail->next = x;
         x->next = head;
     }
