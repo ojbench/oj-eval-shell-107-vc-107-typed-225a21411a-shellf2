@@ -51,6 +51,7 @@ namespace LIST {
 
         if (i <= 0) {
             NODE* last = tail();
+            if (last == nullptr) return;
             node->next = head;
             last->next = node;
             head = node;
@@ -59,6 +60,7 @@ namespace LIST {
         }
 
         NODE* prev = at(i - 1);
+        if (prev == nullptr) return;
         node->next = prev->next;
         prev->next = node;
         ++len;
@@ -78,6 +80,7 @@ namespace LIST {
 
         if (i <= 0) {
             NODE* last = tail();
+            if (last == nullptr) return;
             NODE* doomed = head;
             head = head->next;
             last->next = head;
@@ -87,6 +90,7 @@ namespace LIST {
         }
 
         NODE* prev = at(i - 1);
+        if (prev == nullptr || prev->next == nullptr) return;
         NODE* doomed = prev->next;
         prev->next = doomed->next;
         delete doomed;
@@ -99,6 +103,7 @@ namespace LIST {
         }
 
         NODE* last = tail();
+        if (last == nullptr) return;
         if (i == 0) {
             NODE* moved = head;
             head = head->next;
@@ -108,6 +113,7 @@ namespace LIST {
         }
 
         NODE* prev = at(i - 1);
+        if (prev == nullptr || prev->next == nullptr) return;
         NODE* moved = prev->next;
         prev->next = moved->next;
         last->next = moved;
