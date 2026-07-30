@@ -1,4 +1,6 @@
-#include <bits/stdc++.h>
+// Standard headers only for portability
+#include <iostream>
+#include <algorithm>
 using namespace std;
 
 namespace LIST {
